@@ -1,4 +1,8 @@
+import React from 'react';
+import { ethers } from 'ethers';
 import { useAnvil } from '../contexts/AnvilContext';
+import useArbitrage from '../hooks/useArbitrage'; // Correct relative path
+
 export default function Scanner() {
     const { provider } = useAnvil();
     const { opportunities, isLoading, executeTrade } = useArbitrage(provider);

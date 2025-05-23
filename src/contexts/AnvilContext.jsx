@@ -1,45 +1,68 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
 const AnvilContext = createContext();
 
 export function AnvilProvider({ children }) {
-    const [provider, setProvider] = useState(null);
-    const [account, setAccount] = useState("");
-    const [blockNumber, setBlockNumber] = useState(0);
+    const [anvilProvider, setAnvilProvider] = useState(null);
+    const [account, setAccount] = useState('');
+    const [chainId, setChainId] = useState('');
+    const [balance, setBalance] = useState('0');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         const initAnvil = async () => {
             try {
-                const anvilProvider = new ethers.providers.JsonRpcProvider(
+                const provider = new ethers.providers.JsonRpcProvider(
                     "http://localhost:8545"
                 );
 
-                // Get first account (Anvil default)
-                const accounts = await anvilProvider.listAccounts();
-                setProvider(anvilProvider);
-                setAccount(accounts[0]);
+                // Get network and first account
+                const network = await provider.getNetwork();
+                const accounts = await provider.listAccounts();
 
-                // Monitor new blocks
-                anvilProvider.on("block", (blockNum) => {
-                    setBlockNumber(blockNum);
-                });
-            } catch (error) {
-                console.error("Failed to connect to Anvil:", error);
+                if (accounts.length > 0) {
+                    const balance = await provider.getBalance(accounts[0]);
+
+                    setAnvilProvider(provider);
+                    setAccount(accounts[0]);
+                    setChainId(network.chainId.toString());
+                    setBalance(ethers.utils.formatEther(balance));
+
+                    // Set up block listener
+                    const handleNewBlock = (blockNumber) => {
+                        console.log("New block:", blockNumber);
+                    };
+                    provider.on("block", handleNewBlock);
+
+                    // Return cleanup function
+                    return () => {
+                        provider.off("block", handleNewBlock);
+                    };
+                }
+            } catch (err) {
+                setError(`Anvil connection failed: ${err.message}`);
+                console.error("Anvil init error:", err);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         initAnvil();
-
-        return () => {
-            if (provider) {
-                provider.off("block");
-            }
-        };
     }, []);
 
+    const value = {
+        anvilProvider,
+        account,
+        chainId,
+        balance,
+        isLoading,
+        error
+    };
+
     return (
-        <AnvilContext.Provider value={{ provider, account, blockNumber }}>
+        <AnvilContext.Provider value={value}>
             {children}
         </AnvilContext.Provider>
     );

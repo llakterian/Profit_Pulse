@@ -1,14 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import App from './App';
 import './styles/globals.css';
-import Dashboard from './components/Dashboard';
-import ErrorBoundary from './components/ErrorBoundary';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <Dashboard />
-    </ErrorBoundary>
+    <App />
   </React.StrictMode>
 );

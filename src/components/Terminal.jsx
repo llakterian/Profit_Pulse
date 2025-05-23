@@ -1,23 +1,32 @@
+import React from 'react';
 import { useAnvil } from '../contexts/AnvilContext';
+import Scanner from './Scanner';
+import Trades from './Trades';
 
 export default function Terminal() {
-    const { account, blockNumber } = useAnvil();
+    const { account, chainId, balance } = useAnvil();
 
     return (
-        <div className="cyber-terminal scanlines">
-            {/* ... */}
-            <footer className="cyber-hud">
-                <div className="hud-item">
-                    <span className="hud-label">ACCOUNT</span>
-                    <span className="hud-value font-mono">
-                        {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'DISCONNECTED'}
-                    </span>
+        <div className="cyber-terminal">
+            <header className="cyber-header">
+                <h1 className="neon-text">PROFITMAX PRO</h1>
+                {account && (
+                    <div className="account-info">
+                        <span>{`${account.slice(0, 6)}...${account.slice(-4)}`}</span>
+                        <span>Chain: {chainId}</span>
+                        <span>Balance: {parseFloat(balance).toFixed(4)} ETH</span>
+                    </div>
+                )}
+            </header>
+
+            <div className="main-grid">
+                <div className="panel">
+                    <Scanner />
                 </div>
-                <div className="hud-item">
-                    <span className="hud-label">BLOCK</span>
-                    <span className="hud-value">{blockNumber}</span>
+                <div className="panel">
+                    <Trades />
                 </div>
-            </footer>
+            </div>
         </div>
     );
 }
